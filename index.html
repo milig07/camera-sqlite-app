@@ -1,0 +1,48 @@
+<!-- public/index.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Camera + SQLite</title>
+</head>
+<body>
+  <h2>Enter your name and take a photo</h2>
+  <input type="text" id="name" placeholder="Your Name" />
+  <br /><br />
+  <video id="video" width="320" height="240" autoplay></video>
+  <br />
+  <button onclick="takePhoto()">Take Photo</button>
+  <canvas id="canvas" width="320" height="240" style="display:none;"></canvas>
+  <br /><br />
+  <button onclick="submitData()">Submit</button>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+      .then(stream => {
+        video.srcObject = stream;
+      });
+
+    function takePhoto() {
+      const context = canvas.getContext('2d');
+      context.drawImage(video, 0, 0, 320, 240);
+    }
+
+    async function submitData() {
+      const name = document.getElementById('name').value;
+      const photo = canvas.toDataURL('image/png');
+
+      const response = await fetch('/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, photo })
+      });
+
+      const result = await response.text();
+      alert(result);
+    }
+  </script>
+</body>
+</html>
